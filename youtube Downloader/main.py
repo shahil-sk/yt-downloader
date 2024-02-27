@@ -75,8 +75,7 @@ def startdownload():
             filesize = "{:.2f}".format(filesize)
             print(" -- File Size : ",filesize)
             detail.configure(text=f"Channel :{ytobject.author} || Filesize : {filesize}")
-            download_audio = os.path.join(os.path.expanduser("Downloads"), "Audio")
-            audio.download(output_path = download_audio)
+            audio.download()
             print(" -- File Download Complete")
             finishlabel.configure(text="Download Complete !", text_color="green")
         else:
@@ -87,8 +86,7 @@ def startdownload():
             filesize = "{:.2f}".format(filesize)
             print(" -- File Size : ",filesize)
             detail.configure(text=f"Channel :{ytobject.author}  ||  Filesize : {filesize} Mb")
-            download_video = os.path.join(os.path.expanduser("Downloads"))
-            video.download(output_path=download_video)
+            video.download()
             print(" -- File Download Complete")
             finishlabel.configure(text="Download Complete !",text_color="green")
     except:
