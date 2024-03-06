@@ -1,97 +1,15 @@
+#Required moudels
 import tkinter
 import tkinter as tk
-from tkinter import ttk
 import customtkinter
-import os
 from pytube import YouTube
+import urllib.request
+from PIL import Image
+import os
 
-print(" -- Application Started")
+grab = ""
 
-#function
-def getres():
-    ytlink = link.get()
-    ytobj = YouTube(ytlink)
-    #getting resolution
-    ytstreams = ytobj.streams.filter(type="video")
-    video_res1 = [stream.resolution for stream in ytstreams]
-    print("-------------------------------------------")
-    print(" -- Prints Duplicate resolution for some reason !!")
-    print(video_res1)
-    video_res = []
-    for x in video_res1:
-        if x not in video_res:
-            video_res.append(x)
-    print("-------------------------------------------")
-    print(" -- Getting clean Values")
-    print(video_res)
-    menu.configure(state="normal")
-    return video_res
-    
-#seacrh function
-
-def search():
-    print("\n -- Search Button clicked ::\n")
-
-    try:
-        ytlink = link.get()
-        ytobj = YouTube(ytlink)
-        title.configure(text=ytobj.title,text_color="white")
-        download.configure(fg_color="green", state='enabled')
-        search.configure(state="hidden")
-        print(" -- Link Valid")
-        print(" -- Getting Channel Deatials")
-    
-        detail.configure(text="Channel Name : "+ ytobj.author)
-        video_res = getres()
-        print("----------------------------------------")
-        print(" -- Adding Resolution Values to Menu :-) ")
-        video_res.insert(0,"Audio Only")
-        menu.configure(values=video_res)
-        print(" -- DONE Adding ")
-        print(video_res)
-        print("----------------------------------------")
-        menu.configure(text_color="black")
-
-    except:
-        print(" -- invalid link")
-        finishlabel.configure(text="Invalid Youtube Link !!", text_color="red")
-
-#download function
-def startdownload():
-    print("---------------------------------------")
-    print(" -- Download Button Clicked ::")
-    try:
-        print(" -- Downloading Started ")
-        ytlink = link.get()
-        ytobject = YouTube(ytlink, on_progress_callback=on_progress)
-        reso = menu.get()
-        print(" -- Resolution : ",reso)
-        
-        if(reso == "Audio Only"):
-            print(" -- Getting Audio file")
-            audio = ytobject.streams.get_audio_only()
-            finishlabel.configure(text="")
-            filesize = audio.filesize / 1000000
-            filesize = "{:.2f}".format(filesize)
-            print(" -- File Size : ",filesize)
-            detail.configure(text=f"Channel :{ytobject.author} || Filesize : {filesize}")
-            audio.download()
-            print(" -- File Download Complete")
-            finishlabel.configure(text="Download Complete !", text_color="green")
-        else:
-            print(" -- Getting Video file")
-            video = ytobject.streams.filter(res=reso).first()
-            finishlabel.configure(text="")
-            filesize = video.filesize / 1000000
-            filesize = "{:.2f}".format(filesize)
-            print(" -- File Size : ",filesize)
-            detail.configure(text=f"Channel :{ytobject.author}  ||  Filesize : {filesize} Mb")
-            video.download()
-            print(" -- File Download Complete")
-            finishlabel.configure(text="Download Complete !",text_color="green")
-    except:
-        print(" -- invalid Link")
-        finishlabel.configure(text="Invalid Youtube Link !!", text_color="red")
+print("Application Started")
 
 #progressBar
 def on_progress(stream, chunk, bytes_remaining):
@@ -101,58 +19,144 @@ def on_progress(stream, chunk, bytes_remaining):
     percentage_complete = bytesdownloaded / totalsize * 100
     print(percentage_complete)
     pers = str(int(percentage_complete))
-    pPercentage.configure(text= pers + '%')
-    pPercentage.update()
+    progresstext.configure(text= pers + '%')
+    progresstext.update()
 
     progressbar.set(float(percentage_complete) / 100)
 
+def validatelink():
+    try:
+        #validates link and goes to activity 2
+        #test link :: https://www.youtube.com/watch?v=TK4N5W22Gts
+        grab = YouTube(ytlink.get())
+        header.configure(text="Youtube Downloader 2.0",text_color='white')
+        serachbutton.pack_forget()
+        ytlink.pack_forget()
+        back.pack(ipadx=7)
+        back.place(x=20,y=20)
+        ytitle.place(x=420, y=110)
+        channel.place(x=420, y=140)
+        len.place(x=420, y=170)
+        menu.place(x=420, y=220)
+        downloadbutton.place(x=420, y=260)
 
-#System settings
+        image_label.pack()
+        image_label.place(x=50, y=100)
+
+        
+        progresstext.pack()
+        progresstext.place(x=350, y=330)
+        progressbar.pack()
+        progressbar.place(x=160,y=360)
+
+        
+
+        ytitle.configure (text="Title   : "+grab.title)
+        channel.configure(text="Channel : "+grab.author)
+        urllib.request.urlretrieve(grab.thumbnail_url,"vid.jpg")
+        my_image = customtkinter.CTkImage(light_image=Image.open("vid.jpg"),size=(340, 200))
+        image_label.configure(image=my_image)
+        res = getres()
+        menu.configure(values = res)
+
+    except:
+        print("link not valid")
+        header.configure(text="LINK NOT VALID",text_color='red')
+
+def downloadvideo():
+    progressbar.set(0)
+    progresstext.configure(text="")
+    grab = YouTube(ytlink.get(), on_progress_callback=on_progress)
+    ress = menu.get()
+    print(ress)
+    if(ress == "Audio Only"):
+        audio = grab.streams.get_audio_only()
+        filesize = audio.filesize/1000000
+        filesize = "{:.2f}".format(filesize)
+        audio.download()
+        try:
+            os.remove("vid.jpg")
+        except:
+            print("file does not exists")
+    else:
+        video = grab.streams.filter(res=ress).first()
+        filesize = video.filesize/10000000
+        filesize = "{:.2f}".format(filesize)
+        video.download()
+        try:
+            os.remove("vid.jpg")
+        except:
+            print("file does not exists")
+
+    
+
+
+def getbacktoactivity1():
+    print("Back button Clicked")
+    header.configure(text="Youtube Downloader 2.0",text_color='white')
+    ytlink.pack()
+    serachbutton.pack(pady=20,ipady=3)
+    back.place_forget()
+    ytitle.place_forget()
+    channel.place_forget()
+    len.place_forget()
+    menu.place_forget()
+    downloadbutton.place_forget()
+    progressbar.place_forget()
+    progresstext.place_forget()
+    image_label.place_forget()
+    os.remove("vid.jpg")
+
+#Getting resolution
+def getres():
+    print("Getting Available resolutions")
+
+    grab = YouTube(ytlink.get())
+    res = [stream.resolution for stream in grab.streams.filter(type="video")]
+    uni_list = list(set(res))
+    uni_list = sorted(uni_list)
+    uni_list.insert(0,"Audio Only")
+    return uni_list
+
+#Ui Settings
 customtkinter.set_appearance_mode("System")
-customtkinter.set_default_color_theme("blue")
-
-#App frame
+customtkinter.set_default_color_theme('blue')
 app = customtkinter.CTk()
-app.geometry("620x380")
-app.title("Youtube Downloader")
+app.anchor(customtkinter.CENTER)
+app.geometry("720x480")
+app.title("YT 2.0")
 
-#Adding UI elements
-title = customtkinter.CTkLabel(app, text="Insert Youtube link !!")
-title.pack(padx=10, pady=7)
+#Activity 1
+header = customtkinter.CTkLabel(app,text="Youtube Downloader 2.0")
+header.pack(pady=20)
 
-#misc
-detail = customtkinter.CTkLabel(app, text="")
-detail.pack()
-
-#link Input
+    #link stuff
 url_var = tkinter.StringVar()
-link = customtkinter.CTkEntry(app, width=350, height=40,textvariable = url_var)
-link.pack()
+ytlink = customtkinter.CTkEntry(app, width=380, height=40, textvariable=url_var)
+ytlink.pack()
 
-#Seacrh button
-search = customtkinter.CTkButton(app,text="Search", command=search)
-search.pack(pady=15)
+serachbutton = customtkinter.CTkButton(app, text="Search", fg_color='Blue', command=validatelink)
+serachbutton.pack(pady=20,ipady=2)
 
-#dropdown_list
-menu = customtkinter.CTkComboBox(app,values=["Select Resolution"], text_color="white")
-menu.pack(pady=3)
-menu.configure(state="disabled")
 
-#Download button
-download = customtkinter.CTkButton(app, text="Download", fg_color="grey", command =startdownload,state='disabled')
-download.pack(pady=7)
+#ACTIVITY 2
 
-#message
-finishlabel = customtkinter.CTkLabel(app, text="")
-finishlabel.pack()
+#backbutton
+back = customtkinter.CTkButton(app, text="<", height=30, width=30,fg_color='blue',command=getbacktoactivity1)
+ytitle = customtkinter.CTkLabel(app, text="vidoe name comes here")
+channel = customtkinter.CTkLabel(app, text="channel name")
+len = customtkinter.CTkLabel(app, text="")
+menu = customtkinter.CTkComboBox(app,values = ['Select here'], text_color="white")
+menu.configure(state="readonly")
+downloadbutton = customtkinter.CTkButton(app,text="DOWNLOAD", fg_color='green',command=downloadvideo)
 
-#prgressbar
-pPercentage = customtkinter.CTkLabel(app, text="0%")
-pPercentage.pack()
+
+image_label = customtkinter.CTkLabel(app,text="")
+
+#Progress BAR
+progresstext = customtkinter.CTkLabel(app, text="0%")
 
 progressbar = customtkinter.CTkProgressBar(app, width=400)
 progressbar.set(0)
-progressbar.pack(padx=10, pady=10)
 
-#Run app
 app.mainloop()
